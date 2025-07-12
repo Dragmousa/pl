@@ -2,39 +2,30 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AniPlayer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U8 Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: #000; }
-        #video { width: 100%; height: 100vh; object-fit: contain; }
+        body { margin: 0; padding: 0; background: #000; }
+        #video { width: 100%; height: 100vh; }
     </style>
 </head>
 <body>
-    <video id="video" controls autoplay playsinline></video>
+    <video id="video" controls autoplay></video>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const video = document.getElementById('video');
-            const url = new URLSearchParams(window.location.search).get('url');
-            
-            if (!url) {
-                alert('URL видео не указан');
-                return;
-            }
+        const video = document.getElementById('video');
+        const urlParams = new URLSearchParams(window.location.search);
+        const m3u8Url = urlParams.get('url');
 
-            const decodedUrl = decodeURIComponent(url);
-            
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(decodedUrl);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = decodedUrl;
-            } else {
-                alert('Ваш браузер не поддерживает воспроизведение этого видео');
-            }
-        });
+        if (Hls.isSupported() && m3u8Url) {
+            const hls = new Hls();
+            hls.loadSource(m3u8Url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Для Safari (который поддерживает HLS без Hls.js)
+            video.src = m3u8Url;
+        }
     </script>
 </body>
 </html>
