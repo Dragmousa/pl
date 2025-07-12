@@ -2,26 +2,65 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>M3U8 Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>AniPlayer</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; background: #000; }
-        #video { width: 100%; height: 100vh; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+        }
+        #video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
-    <video id="video" controls autoplay></video>
+    <div id="video-container">
+        <video id="video" controls autoplay playsinline></video>
+    </div>
     <script>
+        // Telegram WebApp готов
+        Telegram.WebApp.ready();
+        
+        // Развернуть на весь экран
+        Telegram.WebApp.expand();
+        
         const video = document.getElementById('video');
         const urlParams = new URLSearchParams(window.location.search);
-        const m3u8Url = urlParams.get('url');
+        const m3u8Url = decodeURIComponent(urlParams.get('url'));
 
         if (Hls.isSupported() && m3u8Url) {
             const hls = new Hls();
             hls.loadSource(m3u8Url);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = m3u8Url;
         }
+        
+        // Обработка ошибок
+        video.addEventListener('error', () => {
+            Telegram.WebApp.showAlert('Ошибка загрузки видео');
+        });
     </script>
 </body>
 </html>
